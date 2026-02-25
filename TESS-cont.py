@@ -333,7 +333,7 @@ if tpf_or_tesscut == 'tpf':
 if tpf_or_tesscut == 'tesscut':
     try:
         search_result = lk.search_tesscut(str(target), sector = int(sector))
-    except NameError: lk.search_tesscut(str(target))
+    except NameError: search_result = lk.search_tesscut(str(target))
     tpf = search_result.download(cutout_size = cutout_size)
     tic = tpf.targetid
     if len(search_result) == 0:
