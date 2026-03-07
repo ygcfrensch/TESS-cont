@@ -580,8 +580,8 @@ CROWDSAP_pixel_by_pixel = resampled_list[idx_target] / resampled
 
 #@|-----------------------------TACO---------------------------#@|
 if TACO:
-	pd.DataFrame(resampled).to_csv(f'output/all_TOIs/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled.csv', index=False)
-	pd.DataFrame(resampled_list[idx_target]).to_csv(f'output/all_TOIs/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled_list.csv', index=False)
+	pd.DataFrame(resampled).to_csv(f'output/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled.csv', index=False)
+	pd.DataFrame(resampled_list[idx_target]).to_csv(f'output/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled_list.csv', index=False)
 #@|------------------------------------------------------------#@|
 
 
