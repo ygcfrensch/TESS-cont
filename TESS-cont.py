@@ -582,8 +582,8 @@ CROWDSAP_pixel_by_pixel = resampled_list[idx_target] / resampled
 if TACO:
 	if not os.path.isdir('output/TACO/'):
 		os.mkdir('output/TACO/')
-	if not os.path.isdir('output/TACO/{target_name}/'):
-		os.mkdir('output/TACO/{target_name}/')
+	if not os.path.isdir(f'output/TACO/{target_name}/'):
+		os.mkdir(f'output/TACO/{target_name}/')
 	pd.DataFrame(resampled).to_csv(f'output/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled.csv', index=False)
 	pd.DataFrame(resampled_list[idx_target]).to_csv(f'output/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled_list.csv', index=False)
 #@|------------------------------------------------------------#@|
