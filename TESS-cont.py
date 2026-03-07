@@ -185,7 +185,11 @@ try:
     plot_target_name = OPTIONAL['plot_target_name'] == 'True'
 except:
     plot_target_name = False
-    
+
+try:
+    TACO = OPTIONAL['TACO'] == 'True'
+except:
+    TACO = False
     
 #@|---------(HEATMAP arguments)-------------
 
@@ -571,6 +575,13 @@ if method_prf == 'accurate':
 
 #@|-----------------CROWDSAP pixel by pixel--------------------#@|
 CROWDSAP_pixel_by_pixel = resampled_list[idx_target] / resampled
+#@|------------------------------------------------------------#@|
+
+
+#@|-----------------------------TACO---------------------------#@|
+if TACO:
+	pd.DataFrame(resampled).to_csv(f'output/all_TOIs/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled.csv', index=False)
+	pd.DataFrame(resampled_list[idx_target]).to_csv(f'output/all_TOIs/{target_name}/{target_name}_S{sector}_{tpf_or_tesscut}_resampled_list.csv', index=False)
 #@|------------------------------------------------------------#@|
 
 
@@ -1095,37 +1106,37 @@ print('\033[1m' + f'Your heatmap {target_name}_S{sector}_heatmap.pdf/png has bee
 
 # In[ ]:
 
+if not TACO:
+    f = open(f'output/{target_name}/{target_name}_S{sector}_contaminant_sources.dat', 'w+')
 
-f = open(f'output/{target_name}/{target_name}_S{sector}_contaminant_sources.dat', 'w+')
+    header = ['Star,Gaia_ID,total_cont(%),rel_cont(%) \n']
+    f.writelines(header)
 
-header = ['Star,Gaia_ID,total_cont(%),rel_cont(%) \n']
-f.writelines(header)
-
-for i in range(n_sources):
+    for i in range(n_sources):
+        
+        crowdsap_sorted_ac = crowdsap_sorted[-n_sources:][::-1][i] * 100 #(in %)
+        total_cont_ac = relative_contam_sorted[:n_sources][i] * 100 #(in %)
+        
+        L = [str(i+1)+','+str(gaia_names_selected[i])+','+str(round(crowdsap_sorted_ac, 4))         +','+str(round(total_cont_ac, 4))+'\n']
+        f.writelines(L)
     
-    crowdsap_sorted_ac = crowdsap_sorted[-n_sources:][::-1][i] * 100 #(in %)
-    total_cont_ac = relative_contam_sorted[:n_sources][i] * 100 #(in %)
+    #####################---rep---###############   
     
-    L = [str(i+1)+','+str(gaia_names_selected[i])+','+str(round(crowdsap_sorted_ac, 4))         +','+str(round(total_cont_ac, 4))+'\n']
-    f.writelines(L)
+    f = open(f'output/{target_name}/{target_name}_S{sector}_contaminant_sources.dat', 'w+')
     
-#####################---rep---###############   
-
-f = open(f'output/{target_name}/{target_name}_S{sector}_contaminant_sources.dat', 'w+')
-
-header = ['Star,Gaia_ID,total_cont(%),rel_cont(%) \n']
-f.writelines(header)
-
-for i in range(n_sources):
+    header = ['Star,Gaia_ID,total_cont(%),rel_cont(%) \n']
+    f.writelines(header)
     
-    crowdsap_sorted_ac = crowdsap_sorted[-n_sources:][::-1][i] * 100 #(in %)
-    total_cont_ac = relative_contam_sorted[:n_sources][i] * 100 #(in %)
+    for i in range(n_sources):
+        
+        crowdsap_sorted_ac = crowdsap_sorted[-n_sources:][::-1][i] * 100 #(in %)
+        total_cont_ac = relative_contam_sorted[:n_sources][i] * 100 #(in %)
+        
+        L = [str(i+1)+','+str(gaia_names_selected[i])+','+str(round(crowdsap_sorted_ac, 4))         +','+str(round(total_cont_ac, 4))+'\n']
+        f.writelines(L)
+        
     
-    L = [str(i+1)+','+str(gaia_names_selected[i])+','+str(round(crowdsap_sorted_ac, 4))         +','+str(round(total_cont_ac, 4))+'\n']
-    f.writelines(L)
-    
-
-print('\033[1m' + f'The list of the {n_sources} most contaminant sources has been saved in {target_name}_S{sector}_contaminant_sources.dat'+'\033[0m')
+    print('\033[1m' + f'The list of the {n_sources} most contaminant sources has been saved in {target_name}_S{sector}_contaminant_sources.dat'+'\033[0m')
 
 
 # In[ ]:
