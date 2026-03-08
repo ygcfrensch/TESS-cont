@@ -972,7 +972,7 @@ if plot_percentages:
                     continue
 
             #@|trick to avoid 100.0 values (put instead 100)
-            if np.round(CROWDSAP_pixel_by_pixel[i, j] * 100, 1) == 100.0:
+            elif np.round(CROWDSAP_pixel_by_pixel[i, j] * 100, 1) == 100.0:
                 text = ax1.text(j+tpf.column, i+tpf.row, str(100),
                            ha="center", va="center", color="k", zorder = 1000, fontsize = 10.5) 
 
