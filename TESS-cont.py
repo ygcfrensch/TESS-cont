@@ -34,6 +34,7 @@ from matplotlib.colorbar import Colorbar
 import astropy.visualization as stretching
 from matplotlib.patches import ConnectionPatch
 from astropy.coordinates import SkyCoord, Angle
+from scipy.ndimage import distance_transform_edt
 from matplotlib.collections import PathCollection
 from matplotlib.legend_handler import HandlerPathCollection
 from astropy.visualization.mpl_normalize import ImageNormalize
@@ -520,6 +521,32 @@ sector = tpf.sector
 
 #print(f'Building the Point Response Functions (PRF) of each Gaia target ... ({method_prf} method)')
 
+# In the case the image needs to be larger than 11x11 the PRF wings can be approximated as follows
+# ONLY implemented in approximate, seeing that it's an approximation :-)
+def extend_prf_wings(model, sourcecol, sourcerow, decay_length=2.):
+    model = model.copy()
+    positive = np.isfinite(model) & (model > 0)
+
+    if not np.any(positive):
+        return model  # Cannot reconstruct a completely failed PRF
+
+    distance, nearest = distance_transform_edt(
+        ~positive, return_indices=True)
+
+    yy, xx = np.indices(model.shape)
+
+    # Extend only outside the measured 13×13 footprint
+    outside = (
+        (np.abs(xx - np.floor(sourcecol + .5)) > 6)
+        | (np.abs(yy - np.floor(sourcerow + .5)) > 6)
+    )
+
+    edge_flux = model[nearest[0], nearest[1]]
+    model[outside] = (
+        edge_flux[outside] * np.exp(-distance[outside] / decay_length)
+    )
+    return model
+
 if method_prf == 'approximate':
     #@|In the approximate method, we estimate the prf in the middle of the TPF ONLY ONCE, and use
     #@|the obtained distribution for all targets (assuming that its shape won't change much)
@@ -536,6 +563,10 @@ if method_prf == 'approximate':
         except:
             #@|this exception occours when there are Gaia sources too far away 
             resampled_ac = np.zeros(tpf.shape[1:3]) 
+
+		if max(tpf.shape[1:3]) > 11:
+             resampled_ac = extend_prf_wings(resampled_ac, pixel_coords[i][0], pixel_coords[i][1])
+        
         resampled_list.append(resampled_ac)
         resampled = resampled + resampled_ac
     
