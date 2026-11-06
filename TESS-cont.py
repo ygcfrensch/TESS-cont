@@ -352,33 +352,61 @@ if tpf_or_tesscut == 'tesscut':
 
 
 #@|modified from tpfplotter (https://github.com/jlillo/tpfplotter)
-def get_gaia_data(ra, dec, search_radius=250):
-    c1 = SkyCoord(ra, dec, frame='icrs', unit='deg')
-    from astroquery.vizier import Vizier
-    Vizier.ROW_LIMIT = -1
-    if gaia_catalog == 'DR3':
-        gaia_cat, catID = "I/355/gaiadr3", gaia_catalog
-    if gaia_catalog == 'DR2':
-        gaia_cat, catID = "I/345/gaia2", gaia_catalog
+# def get_gaia_data(ra, dec, search_radius=250):
+#     c1 = SkyCoord(ra, dec, frame='icrs', unit='deg')
+#     from astroquery.vizier import Vizier
+#     Vizier.ROW_LIMIT = -1
+#     if gaia_catalog == 'DR3':
+#         gaia_cat, catID = "I/355/gaiadr3", gaia_catalog
+#     if gaia_catalog == 'DR2':
+#         gaia_cat, catID = "I/345/gaia2", gaia_catalog
 
-    result = Vizier.query_region(c1, catalog=[gaia_cat],
-                                 radius=Angle(search_radius, "arcsec"))
-    try:
-        result = result[gaia_cat]
-    except:
-        print('This target is not in Gaia '+catID)
-        print('Exiting without finishing...')
-        sys.exit()
+#     result = Vizier.query_region(c1, catalog=[gaia_cat],
+#                                  radius=Angle(search_radius, "arcsec"))
+#     try:
+#         result = result[gaia_cat]
+#     except:
+#         print('This target is not in Gaia '+catID)
+#         print('Exiting without finishing...')
+#         sys.exit()
 
-    no_targets_found_message = ValueError('Either no sources were found in the query region '
-                                          'or Vizier is unavailable')
-    too_few_found_message = ValueError('No sources found closer than 1 arcsec to TPF coordinates')
-    if result is None:
-        raise no_targets_found_message
-    elif len(result) == 0:
-        raise too_few_found_message
+#     no_targets_found_message = ValueError('Either no sources were found in the query region '
+#                                           'or Vizier is unavailable')
+#     too_few_found_message = ValueError('No sources found closer than 1 arcsec to TPF coordinates')
+#     if result is None:
+#         raise no_targets_found_message
+#     elif len(result) == 0:
+#         raise too_few_found_message
         
-    return result 
+#     return result 
+
+# Directly query Gaia instead of Vizier
+def get_gaia_data(ra, dec, search_radius=250):
+	from astroquery.gaia import Gaia
+    c1 = SkyCoord(ra, dec, frame='icrs', unit='deg')
+    Gaia.ROW_LIMIT = -1
+
+    if gaia_catalog == 'DR3':
+        gaia_table = 'gaiadr3.gaia_source'
+    elif gaia_catalog == 'DR2':
+        gaia_table = 'gaiadr2.gaia_source'
+    else:
+        raise ValueError("gaia_catalog must be 'DR2' or 'DR3'")
+
+    columns = {'source_id': 'Source', 'ra': 'RA_ICRS', 'dec': 'DE_ICRS', 'phot_g_mean_mag': 'Gmag', 'pmra': 'pmRA', 'pmdec': 'pmDE'}
+
+    job = Gaia.cone_search_async(c1, radius=Angle(search_radius, 'arcsec'), table_name=gaia_table, columns=list(columns))
+
+    result = Table(job.get_results(), masked=True)
+
+    if len(result) == 0:
+        raise ValueError(f'No Gaia {gaia_catalog} sources returned within {search_radius} arcsec.')
+
+    # Keep the column names expected by the rest of TESS-cont.
+    for old, new in columns.items():
+        result.rename_column(old, new)
+
+    return result
 
 
 # In[ ]:
