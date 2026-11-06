@@ -74,6 +74,10 @@ class TESS_PRF:
         cols = np.array([int(file[-9:-5]) for file in filelist])
         rows = np.array([int(file[-17:-13]) for file in filelist])
 
+        # Use the nearest calibrated detector boundary outside the PRF grid.
+        colnum = np.clip(colnum, np.nextafter(float(cols.min()), np.inf), np.nextafter(float(cols.max()), -np.inf))
+        rownum = np.clip(rownum, np.nextafter(float(rows.min()), np.inf), np.nextafter(float(rows.max()), -np.inf))
+
         #Bilinear interpolation between four surrounding PRFs
         LL = np.where((rows < rownum) & (cols < colnum))[0] #lower left
         LR = np.where((rows > rownum) & (cols < colnum))[0] #lower right
